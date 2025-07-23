@@ -1,0 +1,21 @@
+# .gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ragenv/
+*.egg-info/
+.pytest_cache/
+
+# VS Code
+.vscode/
+
+
+# Logs
+*.log
+logs/
