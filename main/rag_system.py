@@ -1,0 +1,16 @@
+import streamlit as st
+import os
+#from gtts import gTTS
+from dotenv import load_dotenv
+from langchain_community.document_loaders import PyPDFDirectoryLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import FAISS
+from langchain_groq import ChatGroq
+from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.chains import create_history_aware_retriever, create_retrieval_chain
+from langchain.retrievers import ContextualCompressionRetriever
+from sentence_transformers import SentenceTransformer
+from langchain.retrievers.document_compressors import CrossEncoderReranker
+from langchain_community.cross_encoders import HuggingFaceCrossEncoder
+from langchain.chains.combine_documents import create_stuff_documents_chain
