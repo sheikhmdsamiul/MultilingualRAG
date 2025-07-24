@@ -8,14 +8,35 @@ __pycache__/
 .Python
 env/
 venv/
-ragenv/
+ragenv/ 
 *.egg-info/
 .pytest_cache/
 
 # VS Code
 .vscode/
 
+# Data (example, adjust as needed)
+data/*.bin # For example, if you save FAISS indices
+data/*.pkl # If you pickle processed data
+data/processed/ # A directory for processed data if you have one
+data/embeddings/ # A directory for stored embeddings
+uploaded_pdfs/ # Directory for uploaded PDFs
+
+# Environment variables
+.env 
+
+# Models 
+models/
 
 # Logs
 *.log
 logs/
+
+# MacOS
+.DS_Store
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# gTTS audio outputs
+output_*.mp3
