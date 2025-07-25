@@ -1,10 +1,11 @@
 import re
-import unicodedata
+#import unicodedata
 import warnings
 import streamlit as st
 import os
+import tempfile
 #from gtts import gTTS
-import fitz  # PyMuPDF
+from bangla_pdf_ocr import process_pdf
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
@@ -16,55 +17,45 @@ from sentence_transformers import SentenceTransformer
 from langchain.retrievers.document_compressors import CrossEncoderReranker
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.documents import Document
 
 warnings.filterwarnings("ignore")
 
 
 def extract_text_from_pdf(pdf_file):
     if pdf_file is not None:
+        # Save the uploaded file to a temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+            tmp_file.write(pdf_file.read())
+            temp_pdf_path = tmp_file.name
         try:
-            doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
-            full_text = ""
-            for page in doc:
-                text = page.get_text("text")  # Use "text" mode for natural layout
-                full_text += text + "\n"
-    
-            doc.close()
-            return full_text
+            extracted_text = process_pdf(temp_pdf_path, language="ben+eng") 
+            
         except Exception as e:
             st.error(f"Error reading PDF file: {e}")
-            return ""
+        finally:
+            # Ensure the temporary file is deleted after processing
+            if os.path.exists(temp_pdf_path):
+                os.remove(temp_pdf_path)
+    return extracted_text
          
-        
-    return ""
-
 
 
 def clean_line(line):
-    #Remove extra spaces
-    line = re.sub(r'\s+', ' ', line.strip())
+    # Remove English words
+    line = re.sub(r'\b[a-zA-Z]+\b', '', line)
 
-    #Bengali OCR fixes
-    ocr_fixes = {
-        'িি': 'ি', 'েে': 'ে', '্্': '্', 'োো': 'ো', 'ুু': 'ু',
-        'াা': 'া', 'ীী': 'ী', 'ুূ': 'ূ', 'েে': 'ে'
-    }
-    for wrong, right in ocr_fixes.items():
-        line = line.replace(wrong, right)
+    # Remove numbers 
+    line = re.sub(r'\d+', '', line)
 
-    #Replace English punctuation in Bengali context
-    line = re.sub(r'\.(?=\s*[অ-হ])', '।', line)
+    # Remove page-related lines (English or Bangla)
+    line = re.sub(r'(Page|পৃষ্ঠা)\s*\d+', '', line)
 
-    #Keep useful characters
-    line = re.sub(r'[^\w\s\u0980-\u09FF\u0900-\u097F.,!?;:()\-"\'।]', ' ', line)
+    # Remove URLs and emails
+    line = re.sub(r'(https?://\S+|www\.\S+|\S+@\S+)', '', line)
 
-    #Normalize spacing around punctuation
-    line = re.sub(r'([.!?।])([^\s])', r'\1 \2', line)
-    line = re.sub(r'\s+([.!?।,;:])', r'\1', line)
-
-    #Reduce repeated punctuation
-    line = re.sub(r'[.]{2,}', '.', line)
-    line = re.sub(r'[।]{2,}', '।', line)
+    # Remove other special characters (keep Bangla punctuations)
+    line = re.sub(r'[“”"\'’‘•*_+=<>©®@#$%^&~|`]', '', line)
 
     return line.strip()
 
@@ -85,6 +76,27 @@ def main():
     # Sidebar for API Key and PDF uploads
     with st.sidebar:
         st.title("Menu:")
+        groq_api_key_input = st.text_input("Enter your Groq API Key:", type="password", key="groq_api_key_input")
+        
+        # Store API key in session state
+        if groq_api_key_input:
+            st.session_state.groq_api_key = groq_api_key_input
+        
+        # Initialize Groq Chat model if API key is available
+        groq_chat_instance = None
+        if "groq_api_key" in st.session_state and st.session_state.groq_api_key:
+            try:
+                groq_chat_instance = ChatGroq(
+                    groq_api_key=st.session_state.groq_api_key,
+                    model_name='llama-3.3-70b-versatile'
+                )
+                st.sidebar.success("Groq API Key set successfully!")
+            except Exception as e:
+                st.sidebar.error(f"Error initializing Groq: {e}. Please check your API key.")
+                groq_chat_instance = None
+        else:
+            st.sidebar.warning("Please enter your Groq API Key to enable chat.")
+        
         pdf_files = st.file_uploader(
             "Upload your PDF Files and Click on the Submit & Process Button",
             type=["pdf"], accept_multiple_files=True)
