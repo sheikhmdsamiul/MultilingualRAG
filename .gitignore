@@ -9,6 +9,8 @@ __pycache__/
 # Virtual environments
 venv/
 ENV/
+env/
+.venv/
 ragenv/
 
 
