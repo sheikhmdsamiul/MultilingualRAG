@@ -138,7 +138,7 @@ Potential improvements:
 ```
 MultilingualRAG/
 ├── app.py                   # Streamlit interface
-├── api.py                   # API implementation (WIP)
+├── api.py                   # API implementation 
 ├── main/
 │   ├── pdf_handler.py       # PDF processing
 │   ├── clean_processing.py  # Text cleaning
