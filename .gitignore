@@ -1,42 +1,43 @@
-# .gitignore
-
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
 .Python
-env/
+*.so
+
+# Virtual environments
 venv/
-ragenv/ 
-*.egg-info/
-.pytest_cache/
+ENV/
+ragenv/
 
-# VS Code
+
+# IDE
 .vscode/
+.idea/
+*.swp
+*.swo
 
-# Data (example, adjust as needed)
-data/*.bin # For example, if you save FAISS indices
-data/*.pkl # If you pickle processed data
-data/processed/ # A directory for processed data if you have one
-data/embeddings/ # A directory for stored embeddings
-uploaded_pdfs/ # Directory for uploaded PDFs
+# OS
+.DS_Store
+Thumbs.db
 
-# Environment variables
-.env 
+# Streamlit
+.streamlit/
 
-# Models 
+# Model cache and downloads
 models/
+.cache/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+
+# API keys and secrets
+.env
+api_keys.txt
+*.key
 
 # Logs
 *.log
-logs/
-
-# MacOS
-.DS_Store
-
-# Jupyter Notebooks
-.ipynb_checkpoints/
-
-# gTTS audio outputs
-output_*.mp3
