@@ -8,9 +8,9 @@ __pycache__/
 
 # Virtual environments
 venv/
-env/
 ENV/
 ragenv/
+
 
 # IDE
 .vscode/
